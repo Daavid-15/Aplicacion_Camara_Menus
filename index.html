@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Aplicación Web</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Contenedor de subpantallas -->
+  <div id="subscreens">
+
+    <!-- Pantalla Input: por ahora solo muestra un título y un contenedor para imágenes -->
+    <div id="input-screen" class="subscreen">
+      <h1>Input</h1>
+      <div id="input-images"></div>
+    </div>
+
+    <!-- Pantalla Cámara: contiene el video, botones y la imagen capturada -->
+    <div id="camera-screen" class="subscreen active">
+      <div id="camera-container">
+        <video id="video" autoplay playsinline></video>
+        <div class="green-overlay-video"></div>
+      </div>
+      <!-- Botón para capturar la foto -->
+      <button id="capture">Capturar Foto</button>
+      <!-- Botón para enviar la imagen capturada -->
+      <button id="send">Enviar Imagen</button>
+      <div id="last-captured">
+        <img id="lastImage" src="" alt="Última imagen capturada">
+      </div>
+    </div>
+
+    <!-- Pantalla Output -->
+    <div id="output-screen" class="subscreen">
+      <h1>Output</h1>
+      <div id="output-images"></div>
+</div>
+
+  </div>
+
+  <!-- Botonera de navegación fija -->
+  <div id="navbar">
+    <button id="input-btn">Input</button>
+    <button id="camera-btn">Camara</button>
+    <button id="output-btn">Output</button>
+  </div>
+
+  <!-- Área de depuración -->
+  <div id="debug">
+    <h3>Debug</h3>
+    <ul id="debugList"></ul>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

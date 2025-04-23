@@ -1,0 +1,80 @@
+/* Estilos generales */
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  margin: 20px;
+}
+
+/* Contenedor del video */
+#camera-container {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  background: #000;
+}
+
+/* Video y overlay */
+video {
+  width: 100%;
+  display: block;
+}
+.green-overlay-video {
+  position: absolute;
+  border: 3px solid green;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Última imagen y depuración */
+#last-captured { 
+  margin-top: 20px; 
+}
+#last-captured img {
+  width: 100%;
+  max-width: 400px;
+  display: block;
+  margin: 0 auto;
+}
+
+#debug {
+  /* El último margin aplicado será: margin: 20px auto 0; */
+  padding: 10px;
+  border: 1px solid #ccc;
+  text-align: left;
+  max-width: 600px;
+  margin: 20px auto 0;
+  background-color: #f9f9f9;
+}
+#debug h3 { 
+  margin-top: 0; 
+}
+#debug ul { 
+  list-style: none; 
+  padding-left: 0; 
+}
+
+/* Subpantallas: se usan para cambiar la vista */
+.subscreen {
+  display: none;
+}
+.subscreen.active {
+  display: block;
+}
+
+/* Botonera fija al fondo */
+#navbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #eee;
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  border-top: 1px solid #ccc;
+}
+
+
+
