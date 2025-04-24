@@ -38,63 +38,89 @@ function updateOverlay() {
 }
 window.addEventListener("resize", updateOverlay);
 
-// Captura la imagen desde el video
-function capturePhoto() {
-  const canvas = document.createElement("canvas");
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
-  lastImage.src = canvas.toDataURL("image/png");
-  debugLog("Imagen capturada y mostrada");
-}
-
-// Envía la imagen capturada al back-end
-function sendPhoto() {
-  if (!lastImage.src || lastImage.src.indexOf("data:image") !== 0) {
-    debugLog("No hay imagen capturada para enviar");
-    alert("No hay imagen capturada para enviar");
-    return;
-  }
-  let base64Image = lastImage.src.split(",")[1],
-      endpoint = "https://script.google.com/macros/s/AKfycbyp-_LEh2vpD6s48Rly9bmurJGWD0FdjjzXWTqlyiLA2lZl6kLBa3QCb2nvvR4oK_yu/exec";
-  fetch(endpoint, {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ image: base64Image })
-  })
-  .then(() => {
-    debugLog("Imagen enviada correctamente");
-    lastImage.src = "";
-  })
-  .catch(err => debugLog("Error enviando la imagen: " + err.message));
-}
-
-// Eventos para capturar y enviar
+// Función para capturar la foto usando ImageCapture directamente
 captureButton.addEventListener("click", async () => {
   debugLog("Botón 'Capturar Foto' presionado");
+  
   const track = video.srcObject.getVideoTracks()[0],
-        capabilities = track.getCapabilities();
+        capabilities = track.getCapabilities();  
+  const imageCapture = new ImageCapture(track);
+
   if (capabilities.torch) {
     try {
+      // Activa el flash (torch)
       await track.applyConstraints({ advanced: [{ torch: true }] });
       debugLog("Flash activado");
-      await new Promise(resolve => setTimeout(resolve, 200)); // 100 ms de delay (ajustable)
-      capturePhoto();
+
+      // Delay para que se active la linterna antes de capturar la foto
+      await new Promise(resolve => setTimeout(resolve, 500)); 
+      
+      const blob = await imageCapture.takePhoto();
+      lastImage.src = URL.createObjectURL(blob);
+      debugLog("Imagen capturada y mostrada");
+
+      // Desactiva el flash
       await track.applyConstraints({ advanced: [{ torch: false }] });
       debugLog("Flash desactivado");
     } catch (e) {
       debugLog("Error con el flash: " + e);
-      capturePhoto();
+      try {
+        const blob = await imageCapture.takePhoto();
+        lastImage.src = URL.createObjectURL(blob);
+        debugLog("Imagen capturada y mostrada sin flash");
+      } catch (error) {
+        debugLog("Error al tomar la foto: " + error);
+      }
     }
   } else {
-    capturePhoto();
+    try {
+      const blob = await imageCapture.takePhoto();
+      lastImage.src = URL.createObjectURL(blob);
+      debugLog("Imagen capturada y mostrada");
+    } catch (e) {
+      debugLog("Error al tomar la foto: " + e);
+    }
   }
 });
+
 sendButton.addEventListener("click", () => {
   debugLog("Botón 'Enviar Imagen' presionado");
   sendPhoto();
 });
+
+// Envía la imagen capturada al back-end
+function sendPhoto() {
+  // Se espera que la imagen se muestre como URL de objeto (blob)
+  if (!lastImage.src || lastImage.src.indexOf("blob:") !== 0) {
+    debugLog("No hay imagen capturada para enviar");
+    alert("No hay imagen capturada para enviar");
+    return;
+  }
+  
+  // Convertir el blob a base64 para enviarlo
+  fetch(lastImage.src)
+    .then(response => response.blob())
+    .then(blob => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        let base64Image = reader.result.split(",")[1];
+        let endpoint = "https://script.google.com/macros/s/AKfycbyp-_LEh2vpD6s48Rly9bmurJGWD0FdjjzXWTqlyiLA2lZl6kLBa3QCb2nvvR4oK_yu/exec";
+        fetch(endpoint, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image: base64Image })
+        })
+        .then(() => {
+          debugLog("Imagen enviada correctamente");
+          lastImage.src = "";
+        })
+        .catch(err => debugLog("Error enviando la imagen: " + err.message));
+      };
+      reader.readAsDataURL(blob);
+    })
+    .catch(err => debugLog("Error procesando la imagen: " + err));
+}
 
 // Navegación entre pantallas
 function showScreen(screenId) {
@@ -130,8 +156,6 @@ function loadImages(containerId, folder) {
     .catch(error => debugLog("Error al cargar imágenes en " + containerId + ": " + error));
 }
 
-
-
 // EventListeners de navegación
 document.getElementById('input-btn').addEventListener('click', () => {
   showScreen('input-screen');
@@ -145,4 +169,3 @@ document.getElementById('output-btn').addEventListener('click', () => {
 document.getElementById('camera-btn').addEventListener('click', () => {
   showScreen('camera-screen');
 });
-
