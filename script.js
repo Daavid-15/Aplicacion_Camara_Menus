@@ -105,11 +105,11 @@ function showScreen(screenId) {
   }
 }
 
-// Función genérica para cargar imágenes según contenedor y carpeta
+// Función genérica para cargar imágenes según contenedor y carpeta (para visualizar las imágenes del Drive)
 function loadImages(containerId, folder) {
   const container = document.getElementById(containerId);
   container.innerHTML = "";
-  let endpoint = "https://script.google.com/macros/s/AKfycbyp-_LEh2vpD6s48Rly9bmurJGWD0FdjjzXWTqlyiLA2lZl6kLBa3QCb2nvvR4oK_yu/exec?action=listImages";
+  let endpoint = "https://script.google.com/macros/s/AKfycbxNZJxU3s6j1hJO2OHBw9_tL8_mMaZkVImX-iKfTb_BlmAyrQ7FexjmQuFEUw3BRJpD/exec?action=listImages";
   if (folder) endpoint += "&folder=" + folder;
   fetch(endpoint)
     .then(response => response.json())
@@ -118,7 +118,7 @@ function loadImages(containerId, folder) {
         const imgContainer = document.createElement("div");
         imgContainer.style.marginBottom = "20px";
         const imgEl = document.createElement("img");
-        imgEl.src = imgData.url;
+        imgEl.src = imgData.dataUrl;  // Usamos la dataUrl ya en JPEG
         imgEl.alt = imgData.name;
         imgEl.style.cssText = "width: 100%; max-width: 400px; display: block; margin: 0 auto;";
         imgContainer.appendChild(imgEl);
@@ -128,6 +128,8 @@ function loadImages(containerId, folder) {
     })
     .catch(error => debugLog("Error al cargar imágenes en " + containerId + ": " + error));
 }
+
+
 
 // EventListeners de navegación
 document.getElementById('input-btn').addEventListener('click', () => {
