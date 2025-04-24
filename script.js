@@ -56,7 +56,7 @@ function sendPhoto() {
     return;
   }
   let base64Image = lastImage.src.split(",")[1],
-      endpoint = "https://script.google.com/macros/s/AKfycbyp-_LEh2vpD6s48Rly9bmurJGWD0FdjjzXWTqlyiLA2lZl6kLBa3QCb2nvvR4oK_yuexec";
+      endpoint = "https://script.google.com/macros/s/AKfycbyp-_LEh2vpD6s48Rly9bmurJGWD0FdjjzXWTqlyiLA2lZl6kLBa3QCb2nvvR4oK_yu/exec";
   fetch(endpoint, {
     method: "POST",
     mode: "no-cors",
@@ -97,8 +97,8 @@ sendButton.addEventListener("click", () => {
 
 // Navegación entre pantallas
 function showScreen(screenId) {
-  document.querySelectorAll('.subscreen').forEach(screen => screen.classList.remove("active"));
-  document.getElementById(screenId).classList.add("active");
+  document.querySelectorAll('.subscreen').forEach(screen => screen.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
   if (screenId === "camera-screen") {
     if (!video.srcObject) initCamera();
     setTimeout(updateOverlay, 100);
@@ -115,49 +115,31 @@ function loadImages(containerId, folder) {
     .then(response => response.json())
     .then(data => {
       data.forEach(imgData => {
-
-        displayImageWithCanvas(imgData.url, containerId);
+        const imgContainer = document.createElement("div");
+        imgContainer.style.marginBottom = "20px";
+        const imgEl = document.createElement("img");
+        imgEl.src = imgData.url;
+        imgEl.alt = imgData.name;
+        imgEl.style.cssText = "width: 100%; max-width: 400px; display: block; margin: 0 auto;";
+        imgContainer.appendChild(imgEl);
+        container.appendChild(imgContainer);
       });
       debugLog("Se han cargado " + data.length + " imágenes en " + containerId);
     })
     .catch(error => debugLog("Error al cargar imágenes en " + containerId + ": " + error));
 }
 
-// Función para mostrar una imagen usando un canvas (similar a capturePhoto)
-function displayImageWithCanvas(url, containerId) {
-  const image = new Image();
-  image.crossOrigin = "anonymous"; // Permite cargar imágenes de terceros sin problemas de CORS
-  image.onload = () => {
-    const canvas = document.createElement("canvas");
-    canvas.width = image.width;
-    canvas.height = image.height;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(image, 0, 0);
-    const dataURL = canvas.toDataURL("image/png");
-    const imgEl = document.createElement("img");
-    imgEl.src = dataURL;
-    imgEl.alt = "Imagen cargada";
-    imgEl.style.cssText = "width: 100%; max-width: 400px; display: block; margin: 0 auto;";
-    const container = document.getElementById(containerId);
-    container.appendChild(imgEl);
-    debugLog("Imagen mostrada a través de canvas en " + containerId);
-  };
-  image.onerror = (err) => {
-    debugLog("Error cargando la imagen desde URL " + err);
-  };
-  image.src = url;
-}
-
 // EventListeners de navegación
-document.getElementById("input-btn").addEventListener("click", () => {
-  showScreen("input-screen");
+document.getElementById('input-btn').addEventListener('click', () => {
+  showScreen('input-screen');
   // Para Input, puedes omitir folder o pasar "input" según lo requiera el back-end
   loadImages("input-images", "input");
 });
-document.getElementById("output-btn").addEventListener("click", () => {
-  showScreen("output-screen");
+document.getElementById('output-btn').addEventListener('click', () => {
+  showScreen('output-screen');
   loadImages("output-images", "output");
 });
-document.getElementById("camera-btn").addEventListener("click", () => {
-  showScreen("camera-screen");
+document.getElementById('camera-btn').addEventListener('click', () => {
+  showScreen('camera-screen');
 });
+
