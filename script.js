@@ -79,7 +79,7 @@ captureButton.addEventListener("click", async () => {
     try {
       await track.applyConstraints({ advanced: [{ torch: true }] });
       debugLog("Flash activado");
-      await new Promise(resolve => setTimeout(resolve, 100)); // 100 ms de delay (ajustable)
+      await new Promise(resolve => setTimeout(resolve, 200)); // 100 ms de delay (ajustable)
       capturePhoto();
       await track.applyConstraints({ advanced: [{ torch: false }] });
       debugLog("Flash desactivado");
