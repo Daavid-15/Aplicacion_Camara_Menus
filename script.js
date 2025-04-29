@@ -56,52 +56,64 @@ function updateOverlay() {
 }
 window.addEventListener("resize", updateOverlay);
 
-// Función para capturar la foto (versión mejorada)
+// Función para capturar foto con flash forzado
 captureButton.addEventListener("click", async () => {
   debugLog("Botón 'Capturar Foto' presionado");
   
   try {
     const track = stream.getVideoTracks()[0];
     const capabilities = track.getCapabilities();
-    const settings = track.getSettings();
-
-    // Configurar flash automático si está disponible
+    
+    // 1. Intentar usar flash nativo
     if (capabilities.fillLightMode && capabilities.fillLightMode.includes('flash')) {
-      await imageCapture.setOptions({
-        fillLightMode: 'flash',
-        imageHeight: settings.height,
-        imageWidth: settings.width
-      });
-      
-      debugLog("Configuración de flash automático aplicada");
+      await imageCapture.setOptions({ fillLightMode: 'flash' });
       const blob = await imageCapture.takePhoto();
       lastImage.src = URL.createObjectURL(blob);
-      debugLog("Foto capturada con flash nativo");
+      debugLog("Foto con flash nativo");
       
-    } else if (capabilities.torch) { // Fallback a antorcha
-      await track.applyConstraints({ advanced: [{ torch: true }] });
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const blob = await imageCapture.takePhoto();
-      await track.applyConstraints({ advanced: [{ torch: false }] });
-      lastImage.src = URL.createObjectURL(blob);
-      debugLog("Foto capturada con antorcha");
+    // 2. Fallback a antorcha + captura manual
+    } else if (capabilities.torch) {
+      try {
+        // Ciclo completo de flash manual
+        await track.applyConstraints({ advanced: [{ torch: true }] });
+        await new Promise(resolve => setTimeout(resolve, 200)); // Tiempo activación
+        const blob = await imageCapture.takePhoto();
+        await new Promise(resolve => setTimeout(resolve, 100)); // Tiempo exposición
+        await track.applyConstraints({ advanced: [{ torch: false }] });
+        lastImage.src = URL.createObjectURL(blob);
+        debugLog("Foto con antorcha manual");
+        
+      } catch (torchError) {
+        debugLog("Error con antorcha: " + torchError);
+        throw torchError; // Pasar al catch principal
+      }
       
-    } else { // Fallback final sin flash
+    // 3. Fallback final (simular flash)
+    } else {
+      // Efecto visual de flash
+      const flashEffect = document.createElement('div');
+      flashEffect.style = `...`; // Tu CSS para efecto flash
+      document.body.appendChild(flashEffect);
+      
+      // Captura normal
       const blob = await imageCapture.takePhoto();
       lastImage.src = URL.createObjectURL(blob);
-      debugLog("Foto capturada sin flash");
-      // Añadir efecto visual de flash aquí si se desea
+      
+      // Limpiar efecto después de 300ms
+      setTimeout(() => flashEffect.remove(), 300);
+      debugLog("Foto con flash simulado");
     }
     
   } catch (error) {
-    debugLog("Error en captura: " + error);
-    // Intentar captura básica como último recurso
+    debugLog("Error crítico: " + error);
+    // Último intento de captura sin flash
     try {
       const blob = await imageCapture.takePhoto();
       lastImage.src = URL.createObjectURL(blob);
-      debugLog("Foto capturada (fallback extremo)");
+      debugLog("Foto sin flash (fallback final)");
     } catch (e) {
-      debugLog("Error crítico: " + e);
+      debugLog("Error catastrófico: " + e);
+      alert("No se pudo tomar la foto");
     }
   }
 });
