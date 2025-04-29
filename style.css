@@ -39,7 +39,6 @@ video {
 }
 
 #debug {
-  /* El último margin aplicado será: margin: 20px auto 0; */
   padding: 10px;
   border: 1px solid #ccc;
   text-align: left;
@@ -55,7 +54,7 @@ video {
   padding-left: 0; 
 }
 
-/* Subpantallas: se usan para cambiar la vista */
+/* Subpantallas */
 .subscreen {
   display: none;
 }
@@ -75,4 +74,3 @@ video {
   padding: 10px 0;
   border-top: 1px solid #ccc;
 }
-

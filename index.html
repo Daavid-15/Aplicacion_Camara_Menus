@@ -9,22 +9,19 @@
 <body>
   <!-- Contenedor de subpantallas -->
   <div id="subscreens">
-
-    <!-- Pantalla Input: por ahora solo muestra un título y un contenedor para imágenes -->
+    <!-- Pantalla Input -->
     <div id="input-screen" class="subscreen">
       <h1>Input</h1>
       <div id="input-images"></div>
     </div>
 
-    <!-- Pantalla Cámara: contiene el video, botones y la imagen capturada -->
+    <!-- Pantalla Cámara -->
     <div id="camera-screen" class="subscreen active">
       <div id="camera-container">
         <video id="video" autoplay playsinline></video>
         <div class="green-overlay-video"></div>
       </div>
-      <!-- Botón para capturar la foto -->
       <button id="capture">Capturar Foto</button>
-      <!-- Botón para enviar la imagen capturada -->
       <button id="send">Enviar Imagen</button>
       <div id="last-captured">
         <img id="lastImage" src="" alt="Última imagen capturada">
@@ -35,8 +32,7 @@
     <div id="output-screen" class="subscreen">
       <h1>Output</h1>
       <div id="output-images"></div>
-</div>
-
+    </div>
   </div>
 
   <!-- Botonera de navegación fija -->
