@@ -18,32 +18,27 @@ const lastImage = document.getElementById("lastImage");
 
 // Inicializa la cámara (modificado)
 function initCamera() {
-  navigator.mediaDevices.getUserMedia({ 
-    video: { 
+  navigator.mediaDevices.getUserMedia({
+    video: {
       facingMode: "environment",
-      advanced: [{ torch: true }]
-    } 
-  })
-  .then(s => {
-    stream = s; // Asignar a la variable global
+      width: { ideal: 1920 },
+      height: { ideal: 1080 }
+    }
+  }).then(s => {
+    stream = s;
     video.srcObject = stream;
-    debugLog("Acceso a la cámara concedido");
-    video.addEventListener("loadedmetadata", updateOverlay);
     
     const track = stream.getVideoTracks()[0];
     imageCapture = new ImageCapture(track);
     
-    if (imageCapture) {
-      imageCapture.setOptions({
-        fillLightMode: 'flash'
-      }).then(() => {
-        debugLog("Configuración de flash aplicada");
-      }).catch(err => {
-        debugLog("Error configurando flash: " + err);
-      });
-    }
-  })
-  .catch(error => debugLog("Error al acceder a la cámara: " + error));
+    // Detectar capacidades del dispositivo
+    const capabilities = track.getCapabilities();
+    debugLog("Capacidades de la cámara: " + JSON.stringify({
+      flash: capabilities.fillLightMode || 'no soportado',
+      torch: capabilities.torch ? 'soportado' : 'no soportado'
+    }));
+    
+  }).catch(error => debugLog("Error cámara: " + error));
 }
 
 initCamera();
@@ -61,49 +56,52 @@ function updateOverlay() {
 }
 window.addEventListener("resize", updateOverlay);
 
-// Función para capturar la foto (modificado)
+// Función para capturar la foto (versión mejorada)
 captureButton.addEventListener("click", async () => {
   debugLog("Botón 'Capturar Foto' presionado");
   
-  if (!stream) {
-    debugLog("Error: Stream de cámara no inicializado");
-    alert("La cámara no está lista. Espera a que se inicialice.");
-    return;
-  }
-
   try {
     const track = stream.getVideoTracks()[0];
-    
-    if (!track) {
-      throw new Error("No se encontró track de video");
-    }
+    const capabilities = track.getCapabilities();
+    const settings = track.getSettings();
 
-    // Resto del código original...
-    if (track.getCapabilities().torch) {
+    // Configurar flash automático si está disponible
+    if (capabilities.fillLightMode && capabilities.fillLightMode.includes('flash')) {
+      await imageCapture.setOptions({
+        fillLightMode: 'flash',
+        imageHeight: settings.height,
+        imageWidth: settings.width
+      });
+      
+      debugLog("Configuración de flash automático aplicada");
+      const blob = await imageCapture.takePhoto();
+      lastImage.src = URL.createObjectURL(blob);
+      debugLog("Foto capturada con flash nativo");
+      
+    } else if (capabilities.torch) { // Fallback a antorcha
       await track.applyConstraints({ advanced: [{ torch: true }] });
-      debugLog("Flash (antorcha) activado");
-      await new Promise(resolve => setTimeout(resolve, 300));
-    }
-    
-    const blob = await imageCapture.takePhoto();
-    debugLog("Foto capturada con flash");
-    lastImage.src = URL.createObjectURL(blob);
-    
-    if (track.getCapabilities().torch) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const blob = await imageCapture.takePhoto();
       await track.applyConstraints({ advanced: [{ torch: false }] });
-      debugLog("Flash desactivado");
+      lastImage.src = URL.createObjectURL(blob);
+      debugLog("Foto capturada con antorcha");
+      
+    } else { // Fallback final sin flash
+      const blob = await imageCapture.takePhoto();
+      lastImage.src = URL.createObjectURL(blob);
+      debugLog("Foto capturada sin flash");
+      // Añadir efecto visual de flash aquí si se desea
     }
     
   } catch (error) {
     debugLog("Error en captura: " + error);
-    
-    // Fallback: Intentar captura sin flash
+    // Intentar captura básica como último recurso
     try {
       const blob = await imageCapture.takePhoto();
       lastImage.src = URL.createObjectURL(blob);
-      debugLog("Foto capturada sin flash (fallback)");
+      debugLog("Foto capturada (fallback extremo)");
     } catch (e) {
-      debugLog("Error en fallback: " + e);
+      debugLog("Error crítico: " + e);
     }
   }
 });
