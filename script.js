@@ -43,7 +43,7 @@ function initCamera() {
       
       // Mostrar capacidades de la cámara
       const capabilities = track.getCapabilities();
-      debugLog("Capacidades de la cámara: " + JSON.stringify({
+      debugLog("Cámara:" + JSON.stringify({
         flash: capabilities.fillLightMode || 'no soportado',
         torch: capabilities.torch ? 'soportado' : 'no soportado'
       }));
@@ -68,7 +68,7 @@ window.addEventListener("resize", updateOverlay);
 
 // Función para capturar la foto
 captureButton.addEventListener("click", async () => {
-  debugLog("Botón 'Capturar Foto' presionado");
+  debugLog("Capturando Imagen...");
   
   let track;
   try {
@@ -80,22 +80,22 @@ captureButton.addEventListener("click", async () => {
       await imageCapture.setOptions({ fillLightMode: "flash" });
       const blob = await imageCapture.takePhoto();
       lastImage.src = URL.createObjectURL(blob);
-      debugLog("Foto con flash nativo");
+      debugLog("Foto con flash");
       
     // 2. Usar antorcha si flash nativo no está disponible
     } else if (capabilities.torch) {
       try {
         await track.applyConstraints({ advanced: [{ torch: true }] });
-        debugLog("Antorcha activada");
+        debugLog("Linterna activada");
         await new Promise(resolve => setTimeout(resolve, 200)); // Espera de estabilización
         const blob = await imageCapture.takePhoto();
         lastImage.src = URL.createObjectURL(blob);
-        debugLog("Foto con antorcha");
+        debugLog("Foto sacada");
       } finally {
         if (track && capabilities.torch) {
           await track.applyConstraints({ advanced: [{ torch: false }] })
-            .then(() => debugLog("Antorcha desactivada"))
-            .catch(err => debugLog("Error apagando antorcha: " + err));
+            .then(() => debugLog("Linterna desactivada"))
+            .catch(err => debugLog("Error apagando Linterna: " + err));
         }
       }
     } else {
@@ -124,8 +124,8 @@ captureButton.addEventListener("click", async () => {
 // Envía la imagen capturada al back-end
 function sendPhoto() {
   if (!lastImage.src || lastImage.src.indexOf("blob:") !== 0) {
-    debugLog("No hay imagen capturada para enviar");
-    alert("No hay imagen capturada para enviar");
+    debugLog("No hay imagen para enviar");
+    alert("No hay imagen para enviar");
     return;
   }
   
